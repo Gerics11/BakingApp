@@ -117,7 +117,7 @@ public class RecipeDetailsActivity extends AppCompatActivity implements StepSele
     }
 
     @Override
-    public void onVideoRightClick() { //todo don't create new fragments?
+    public void onVideoRightClick() {
         Log.d("DETAILSACTIVITY", "CLICK REGISTERED IN ACTIVITY, POS: " + stepPosition);
 
         if (stepPosition < recipe.getSteps().size() - 1) {
