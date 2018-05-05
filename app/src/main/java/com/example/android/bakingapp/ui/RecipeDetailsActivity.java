@@ -151,7 +151,7 @@ public class RecipeDetailsActivity extends AppCompatActivity implements StepSele
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                getSupportFragmentManager().popBackStack();
+                onBackPressed();
                 return true;
         }
         return super.onOptionsItemSelected(item);
