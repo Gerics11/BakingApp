@@ -2,10 +2,10 @@ package com.example.android.bakingapp.ui.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,7 +38,6 @@ public class StepSelector extends Fragment implements StepAdapter.onRecyclerView
     public StepSelector() {
     }
 
-    // TODO: Rename and change types and number of parameters
     public static StepSelector newInstance(Recipe recipe) {
         StepSelector fragment = new StepSelector();
         Bundle args = new Bundle();
@@ -60,9 +59,7 @@ public class StepSelector extends Fragment implements StepAdapter.onRecyclerView
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_step_selector, container, false);
 
         TextView ingredientsTextView = view.findViewById(R.id.ingredient_list);
@@ -93,16 +90,12 @@ public class StepSelector extends Fragment implements StepAdapter.onRecyclerView
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement videoFragmentClickListener");
         }
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        Log.d("STEPSELECTOR", "DETACHED");
         mListener = null;
     }
 
@@ -112,7 +105,6 @@ public class StepSelector extends Fragment implements StepAdapter.onRecyclerView
 
     @Override
     public void onRecyclerViewClick(int position) {
-        Log.d("STEPSELECTOR", "CLICK REGISTERED IN FRAGMENT, POS: " + position);
         mListener.onFragmentClick(position);
     }
 }

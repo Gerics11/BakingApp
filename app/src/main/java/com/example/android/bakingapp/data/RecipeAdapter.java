@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,8 +20,9 @@ import java.util.List;
 
 public class RecipeAdapter extends ArrayAdapter {
 
-    Context context;
-    List<Recipe> recipes;
+    private final Context context;
+    private final List<Recipe> recipes;
+    private AdapterClickHandler adapterCallBack;
 
     public RecipeAdapter(@NonNull Context context, List<Recipe> recipes) {
         super(context, 0);
@@ -30,29 +30,29 @@ public class RecipeAdapter extends ArrayAdapter {
         this.recipes = recipes;
     }
 
-
     @NonNull
     @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+    public View getView(final int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         View view = convertView;
         final Recipe recipe = recipes.get(position);
+        adapterCallBack = (AdapterClickHandler) context;
 
         if (view == null) {
-            LayoutInflater inflater = ((Activity)context).getLayoutInflater();
+            LayoutInflater inflater = ((Activity) context).getLayoutInflater();
             view = inflater.inflate(R.layout.grid_item, parent, false);
         }
 
         TextView gridTextView = view.findViewById(R.id.grid_item_textview);
         gridTextView.setText(recipe.getName());
-        Log.d("RECIPEADAPTER", recipes.get(position).getName());
 
-        if(recipes.get(position).getImage() == null) {
+        if (recipes.get(position).getImage() == null) {
             Glide.with(context).load(recipes.get(position).getImage()).into((ImageView) view.findViewById(R.id.iv_recipe_image));
         }
 
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                adapterCallBack.adapterItemClicked(position);
                 Intent openDetailsIntent = new Intent(context, RecipeDetailsActivity.class);
                 openDetailsIntent.putExtra("recipe", recipe);
                 context.startActivity(openDetailsIntent);
@@ -66,5 +66,8 @@ public class RecipeAdapter extends ArrayAdapter {
         return recipes.size();
     }
 
+    public interface AdapterClickHandler {
+        void adapterItemClicked(int position);
+    }
 
 }

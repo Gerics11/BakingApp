@@ -23,11 +23,4 @@ public class ExampleInstrumentedTest {
 
         assertEquals("com.example.android.bakingapp", appContext.getPackageName());
     }
-
-
-    //todo recipesactivity - intent test, gridview test
-
-    //todo recipedetailactivity displayedfragments test (orientation)
-
-
 }

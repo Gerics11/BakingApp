@@ -3,21 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/themePrimaryLighter"
     tools:context=".ui.fragments.StepSelector">
 
     <TextView
         android:id="@+id/ingredient_list"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"/>
 
-    <!-- TODO holds ingredients list  -->
     <android.support.v7.widget.RecyclerView
         android:layout_below="@id/ingredient_list"
         android:id="@+id/recyclerview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         />
-
-    <!-- TODO recyclerview of steps -->
 
 </RelativeLayout>

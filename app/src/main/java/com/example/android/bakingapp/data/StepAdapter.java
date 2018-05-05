@@ -3,7 +3,6 @@ package com.example.android.bakingapp.data;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,14 +18,12 @@ public class StepAdapter extends RecyclerView.Adapter<StepAdapter.StepAdapterVie
     private final Context context;
     private final List<Map<String, String>> steps;
 
-    private onRecyclerViewInteraction interactionListener;
+    private final onRecyclerViewInteraction interactionListener;
 
     public StepAdapter(Context context, onRecyclerViewInteraction interactionListener, List<Map<String, String>> steps) {
         this.context = context;
         this.interactionListener = interactionListener;
         this.steps = steps;
-
-        Log.d("STEPADAPTER", "stepadapter created, number of steps:" + steps.size());
     }
 
     @NonNull
@@ -44,7 +41,6 @@ public class StepAdapter extends RecyclerView.Adapter<StepAdapter.StepAdapterVie
         holder.stepTitle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("STEPADAPTER", "CLICKLISTENER IS FINE");
                 interactionListener.onRecyclerViewClick(position);
             }
         });
@@ -57,11 +53,6 @@ public class StepAdapter extends RecyclerView.Adapter<StepAdapter.StepAdapterVie
 
     public interface onRecyclerViewInteraction {
         void onRecyclerViewClick(int position);
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return super.getItemViewType(position);
     }
 
     public class StepAdapterViewHolder extends RecyclerView.ViewHolder{

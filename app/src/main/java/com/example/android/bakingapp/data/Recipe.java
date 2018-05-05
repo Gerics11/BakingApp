@@ -98,11 +98,11 @@ public class Recipe implements Parcelable{
         parcel.writeString(image);
     }
 
-    protected Recipe(Parcel in) {
+    private Recipe(Parcel in) {
         id = in.readInt();
         name = in.readString();
 
-        ingredients = new ArrayList<Map<String, String>>();
+        ingredients = new ArrayList<>();
         in.readList(ingredients, null);
 
         steps = new ArrayList<>();
