@@ -28,7 +28,7 @@ import java.util.Map;
  * Use the {@link StepSelector#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class StepSelector extends Fragment implements StepAdapter.onRecyclerViewInteraction{ //todo add ingredients list
+public class StepSelector extends Fragment implements StepAdapter.onRecyclerViewInteraction{
 
     private static final String RECIPE_OBJECT = "recipe";
 
