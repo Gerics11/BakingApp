@@ -2,13 +2,14 @@ package com.example.android.bakingapp.data;
 
 import android.content.Context;
 
-import com.example.android.bakingapp.R;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -22,6 +23,8 @@ import java.util.Map;
 
 
 public class JsonData {
+
+    public static final String JSON_FILE = "recipes.json";
 
     private static final String ID = "id";
     private static final String NAME = "name";
@@ -105,8 +108,14 @@ public class JsonData {
     }
 
     public static String getJsonString(Context context) {
+        File file = new File(context.getFilesDir() + "/" + JSON_FILE);
+        InputStream is = null;
+        try {
+            is = context.openFileInput(JSON_FILE);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
 
-        InputStream is = context.getResources().openRawResource(R.raw.recipes);
         Writer writer = new StringWriter();
         char[] buffer = new char[1024];
         try {
@@ -119,11 +128,30 @@ public class JsonData {
             e.printStackTrace();
         } finally {
             try {
-                is.close();
+                if(is != null) is.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
         return writer.toString();
+    }
+
+    public static void saveJsonData(Context context, String jsonString) {
+        File file = new File(context.getFilesDir() + "/" + JSON_FILE);
+
+        FileOutputStream overWrite = null;
+        try {
+            overWrite = new FileOutputStream(file, false);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            overWrite.write(jsonString.getBytes());
+            overWrite.flush();
+            overWrite.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

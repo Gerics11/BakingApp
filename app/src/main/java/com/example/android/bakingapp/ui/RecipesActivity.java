@@ -2,13 +2,18 @@ package com.example.android.bakingapp.ui;
 
 import android.appwidget.AppWidgetManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.net.ConnectivityManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.data.JsonData;
@@ -16,6 +21,13 @@ import com.example.android.bakingapp.data.Recipe;
 import com.example.android.bakingapp.data.RecipeAdapter;
 import com.example.android.bakingapp.widget.RecipeWidgetProvider;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
@@ -30,13 +42,24 @@ public class RecipesActivity extends AppCompatActivity implements RecipeAdapter.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipes);
 
-        recipes = JsonData.getRecipeList(JsonData.getJsonString(this));
-
         layout = findViewById(R.id.grid_recipes);
-        adapter = new RecipeAdapter(this, recipes);
+
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+        if(cm.getActiveNetworkInfo() != null) {
+            new DataSync().execute("https://d17h27t6h515a5.cloudfront.net/topher/2017/May/59121517_baking/baking.json");
+        } else if (getFileStreamPath(JsonData.JSON_FILE).exists()){
+            Toast.makeText(this, "NO CONNECTION, LOADING DATA FROM CACHE", Toast.LENGTH_LONG).show();
+            Log.d("RECIPESACTVITY", "FILE EXISTS");
+            recipes = JsonData.getRecipeList(JsonData.getJsonString(this));
+            adapter = new RecipeAdapter(this, recipes);
+            layout.setAdapter(adapter);
+        } else {
+            Toast.makeText(this, "NO LOCAL OR ONLINE DATA AVAILABLE", Toast.LENGTH_LONG).show();
+        }
 
 
-        layout.setAdapter(adapter);
+
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             layout.setNumColumns(2);
@@ -50,6 +73,7 @@ public class RecipesActivity extends AppCompatActivity implements RecipeAdapter.
         saveIngredientsToPreference(position, recipes.get(position));
         updateWidgets();
     }
+
     //build string and save to preferences
     private void saveIngredientsToPreference(int position, Recipe recipe) {
         StringBuilder builder = new StringBuilder();
@@ -83,5 +107,62 @@ public class RecipesActivity extends AppCompatActivity implements RecipeAdapter.
                 .getAppWidgetIds(new ComponentName(getApplication(), RecipeWidgetProvider.class));
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids);
         sendBroadcast(intent);
+    }
+
+
+    private class DataSync extends AsyncTask<String, String, String> {
+
+        protected String doInBackground(String... params) {
+            Log.d("RECIPESACTVITY", "CREATING FROM URL");
+
+            HttpURLConnection connection = null;
+            BufferedReader reader = null;
+
+            try {
+                URL url = new URL(params[0]);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
+
+                InputStream stream = connection.getInputStream();
+
+                reader = new BufferedReader(new InputStreamReader(stream));
+
+                StringBuffer buffer = new StringBuffer();
+                String line = "";
+
+                while ((line = reader.readLine()) != null) {
+                    buffer.append(line + "\n");
+                }
+                return buffer.toString();
+
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (connection != null) {
+                    connection.disconnect();
+                }
+                try {
+                    if (reader != null) {
+                        reader.close();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result); //todo update ui
+            Log.d("RECIPESACTVITY", "LOADED FROM URL");
+            JsonData.saveJsonData(RecipesActivity.this, result); //todo check internet connection
+            recipes = JsonData.getRecipeList(result);
+            adapter = new RecipeAdapter(RecipesActivity.this, recipes);
+            layout.setAdapter(adapter);
+        }
     }
 }

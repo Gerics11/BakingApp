@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.data.JsonData;
@@ -72,6 +73,9 @@ public class RecipeDetailsActivity extends AppCompatActivity implements StepSele
                 fragmentManager.beginTransaction()
                         .add(R.id.video_container, videoFragment)
                         .commit();
+                if(recipe.getSteps().get(stepPosition).get(JsonData.STEP_VIDEO_URL).isEmpty()){
+                    Toast.makeText(this, "No available video for this step", Toast.LENGTH_LONG).show();
+                }
             } else {
                 fragmentManager.beginTransaction()
                         .add(R.id.step_selector_container, stepSelectorFragment)
