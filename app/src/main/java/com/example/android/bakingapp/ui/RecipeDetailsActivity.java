@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -42,47 +43,51 @@ public class RecipeDetailsActivity extends AppCompatActivity implements StepSele
             stepPosition = preferences.getInt("position", 1);
             recipe = JsonData.getRecipeList(JsonData.getJsonString(this)).get(stepPosition);
         }
-        //check for existing fragments
+
+        int orientation = getResources().getConfiguration().orientation;
+        boolean isTablet = getResources().getBoolean(R.bool.isTablet);
+
         FragmentManager fragmentManager = getSupportFragmentManager();
-        Fragment stepFragment = fragmentManager.findFragmentById(R.id.step_selector_container);
-        Fragment videoFragment = fragmentManager.findFragmentById(R.id.video_container);
-        //create frags to match orientation
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            StepSelector stepSelectorFragment = StepSelector.newInstance(recipe);
-            stepSelectorFragment.setRecipe(recipe);
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
 
-            if (stepFragment != null && videoFragment != null) {  //switching from landscape
-                fragmentManager.beginTransaction()
-                        .remove(videoFragment)
-                        .add(R.id.step_selector_container, stepSelectorFragment)
-                        .commit();
-            } else {
-                fragmentManager.beginTransaction()
-                        .add(R.id.step_selector_container, stepSelectorFragment)
-                        .commit();
+
+        if (savedInstanceState == null) {     //first open via intent
+            //create phone or tablet layout-- if phone add stepselector-- tablet add video and selector
+            switch (orientation) {
+                case Configuration.ORIENTATION_LANDSCAPE:
+                    if (isTablet) {
+                        fragmentTransaction.add(R.id.step_selector_container, StepSelector.newInstance(recipe));
+                    }
+                    fragmentTransaction.add(R.id.video_container, StepInstruction.newInstance(recipe.getSteps().get(stepPosition)));
+                    break;
+
+                case Configuration.ORIENTATION_PORTRAIT:
+                    fragmentTransaction.add(R.id.step_selector_container, StepSelector.newInstance(recipe));
+                    break;
             }
-        } else {                                                    //landscape
 
-            StepSelector stepSelectorFragment = StepSelector.newInstance(recipe);
-            stepSelectorFragment.setRecipe(recipe);
 
-            videoFragment = StepInstruction.newInstance(recipe.getSteps().get(stepPosition));
-            if (!getResources().getBoolean(R.bool.isTablet)) {
-                android.support.v7.app.ActionBar actionBar = getSupportActionBar();
-                actionBar.hide();
-                fragmentManager.beginTransaction()
-                        .add(R.id.video_container, videoFragment)
-                        .commit();
-                if(recipe.getSteps().get(stepPosition).get(JsonData.STEP_VIDEO_URL).isEmpty()){
-                    Toast.makeText(this, "No available video for this step", Toast.LENGTH_LONG).show();
-                }
-            } else {
-                fragmentManager.beginTransaction()
-                        .add(R.id.step_selector_container, stepSelectorFragment)
-                        .add(R.id.video_container, videoFragment)
-                        .commit();
+        } else {                            //after lifecycle event
+            //check for existing fragments
+            Fragment stepFragment = fragmentManager.findFragmentById(R.id.step_selector_container);
+            Fragment videoFragment = fragmentManager.findFragmentById(R.id.video_container);
+
+
+            if (stepFragment == null && (isTablet || orientation == Configuration.ORIENTATION_PORTRAIT))
+                fragmentTransaction.add(R.id.step_selector_container, StepSelector.newInstance(recipe));
+            if (videoFragment == null && orientation == Configuration.ORIENTATION_LANDSCAPE)
+                fragmentTransaction.add(R.id.video_container, StepInstruction.newInstance(recipe.getSteps().get(stepPosition)));
+        }
+
+        if (!isTablet && orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+            actionBar.hide();
+            if (recipe.getSteps().get(stepPosition).get(JsonData.STEP_VIDEO_URL).isEmpty()){
+                Toast.makeText(this, R.string.no_video_available, Toast.LENGTH_LONG).show();
             }
         }
+
+        fragmentTransaction.commit();
     }
 
     @Override

@@ -11,7 +11,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.widget.GridView;
 import android.widget.Toast;
 
@@ -25,13 +24,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
 public class RecipesActivity extends AppCompatActivity implements RecipeAdapter.AdapterClickHandler {
+
+    private static final String DATA_SOURCE = "https://d17h27t6h515a5.cloudfront.net/topher/2017/May/59121517_baking/baking.json";
 
     private GridView layout;
     private RecipeAdapter adapter;
@@ -47,20 +48,15 @@ public class RecipesActivity extends AppCompatActivity implements RecipeAdapter.
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
         if(cm.getActiveNetworkInfo() != null) {
-            new DataSync().execute("https://d17h27t6h515a5.cloudfront.net/topher/2017/May/59121517_baking/baking.json");
+            new DataSync(this).execute(DATA_SOURCE);
         } else if (getFileStreamPath(JsonData.JSON_FILE).exists()){
-            Toast.makeText(this, "NO CONNECTION, LOADING DATA FROM CACHE", Toast.LENGTH_LONG).show();
-            Log.d("RECIPESACTVITY", "FILE EXISTS");
+            Toast.makeText(this, R.string.loading_from_cache, Toast.LENGTH_LONG).show();
             recipes = JsonData.getRecipeList(JsonData.getJsonString(this));
             adapter = new RecipeAdapter(this, recipes);
             layout.setAdapter(adapter);
         } else {
-            Toast.makeText(this, "NO LOCAL OR ONLINE DATA AVAILABLE", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.no_data, Toast.LENGTH_LONG).show();
         }
-
-
-
-
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
             layout.setNumColumns(2);
         } else {
@@ -112,8 +108,13 @@ public class RecipesActivity extends AppCompatActivity implements RecipeAdapter.
 
     private class DataSync extends AsyncTask<String, String, String> {
 
+        private WeakReference<Context> contextRef;
+
+        DataSync(Context context) {
+            contextRef = new WeakReference<>(context);
+        }
+
         protected String doInBackground(String... params) {
-            Log.d("RECIPESACTVITY", "CREATING FROM URL");
 
             HttpURLConnection connection = null;
             BufferedReader reader = null;
@@ -127,17 +128,16 @@ public class RecipesActivity extends AppCompatActivity implements RecipeAdapter.
 
                 reader = new BufferedReader(new InputStreamReader(stream));
 
-                StringBuffer buffer = new StringBuffer();
-                String line = "";
+                StringBuilder builder = new StringBuilder();
+                String line;
 
                 while ((line = reader.readLine()) != null) {
-                    buffer.append(line + "\n");
+                    builder.append(line)
+                            .append("\n");
                 }
-                return buffer.toString();
+                return builder.toString();
 
 
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -157,9 +157,8 @@ public class RecipesActivity extends AppCompatActivity implements RecipeAdapter.
 
         @Override
         protected void onPostExecute(String result) {
-            super.onPostExecute(result); //todo update ui
-            Log.d("RECIPESACTVITY", "LOADED FROM URL");
-            JsonData.saveJsonData(RecipesActivity.this, result); //todo check internet connection
+            super.onPostExecute(result);
+            JsonData.saveJsonData(RecipesActivity.this, result);
             recipes = JsonData.getRecipeList(result);
             adapter = new RecipeAdapter(RecipesActivity.this, recipes);
             layout.setAdapter(adapter);

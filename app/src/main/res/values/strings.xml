@@ -2,4 +2,8 @@
     <string name="app_name">BakingApp</string>
     <string name="empty_widget_message">"Open BakingApp to select recipe"</string>
     <string name="ingredients">ingredients</string>
+    <string name="loading_from_cache">No internet connection, loading from local cache</string>
+    <string name="no_data">No local or online data available</string>
+    <string name="no_video_available">No available video for this step</string>
+    <string name="offline_mode_video">Videos not available in offline mode</string>
 </resources>

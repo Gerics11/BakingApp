@@ -3,6 +3,7 @@ package com.example.android.bakingapp.ui.fragments;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -49,6 +50,8 @@ public class StepInstruction extends Fragment implements ExoPlayer.EventListener
     private Map<String, String> step;
     private SimpleExoPlayer exoPlayer;
     private SimpleExoPlayerView videoView;
+
+    private boolean shouldAutoPlay = true;
 
     private StepInstructionClickListener stepInstructionCallBack;
 
@@ -111,7 +114,7 @@ public class StepInstruction extends Fragment implements ExoPlayer.EventListener
         if (savedInstanceState != null) {
             Log.d("STEPINSTRUCTION", "using savedinstancestate" + String.valueOf(savedInstanceState.getLong(CODE_PLAYBACK_POSITION)+ String.valueOf(savedInstanceState.getInt(CODE_PLAYBACK_STATE) == ExoPlayer.STATE_READY)));
             exoPlayer.seekTo(savedInstanceState.getLong(CODE_PLAYBACK_POSITION));
-            exoPlayer.setPlayWhenReady(savedInstanceState.getInt(CODE_PLAYBACK_STATE) == ExoPlayer.STATE_READY);
+            exoPlayer.setPlayWhenReady(savedInstanceState.getBoolean(CODE_PLAYBACK_STATE));
         } else {
             exoPlayer.setPlayWhenReady(true);
         }
@@ -180,35 +183,24 @@ public class StepInstruction extends Fragment implements ExoPlayer.EventListener
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-    }
-
-    @Override
-    public void onDestroy() {
+    public void onDestroy() { //todo remove unneeded lines
         super.onDestroy();
-        exoPlayer.stop();
         exoPlayer.removeListener(this);
         exoPlayer.release();
-        stepInstructionCallBack = null;
-        exoPlayer = null;
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putLong(CODE_PLAYBACK_POSITION, exoPlayer.getCurrentPosition());
-        outState.putInt(CODE_PLAYBACK_STATE, exoPlayer.getPlaybackState());
+        outState.putBoolean(CODE_PLAYBACK_STATE, shouldAutoPlay);
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        exoPlayer.stop();
-    }
+
 
     @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+        shouldAutoPlay = playWhenReady;
 
     }
 
@@ -223,8 +215,6 @@ public class StepInstruction extends Fragment implements ExoPlayer.EventListener
     @Override
     public void onLoadingChanged(boolean isLoading) {
     }
-
-
 
     @Override
     public void onPlayerError(ExoPlaybackException error) {
@@ -241,9 +231,17 @@ public class StepInstruction extends Fragment implements ExoPlayer.EventListener
 
     private void checkForConnection(){
         ConnectivityManager cm = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-
-        if(cm.getActiveNetworkInfo() != null) {
-            Toast.makeText(getContext(), "Videos not available in offline mode", Toast.LENGTH_SHORT);
+        NetworkInfo[] info = cm.getAllNetworkInfo();
+        boolean isConnected = false;
+        if (info != null)
+            for (NetworkInfo anInfo : info)
+                if (anInfo.getState() == NetworkInfo.State.CONNECTED) {
+                    isConnected = true;
+                    break;
+                }
+        if (!isConnected) {
+            Toast.makeText(getContext(), R.string.offline_mode_video, Toast.LENGTH_SHORT).show();
+            videoView.setVisibility(View.GONE);
         }
     }
 }
