@@ -26,24 +26,23 @@ public class JsonData {
 
     public static final String JSON_FILE = "recipes.json";
 
-    private static final String ID = "id";
-    private static final String NAME = "name";
+    public static final String ID = "id";
+    public static final String NAME = "name";
 
-    private static final String INGREDIENTS = "ingredients";
+    public static final String INGREDIENTS = "ingredients";
     public static final String INGREDIENT_QUANTITY = "quantity";
     public static final String INGREDIENT_MEASURE = "measure";
     public static final String INGREDIENT_INGREDIENT = "ingredient";
 
-    private static final String STEPS = "steps";
-    private static final String STEP_ID = "id";
+    public static final String STEPS = "steps";
+    public static final String STEP_ID = "id";
     public static final String STEP_SHORT_DESC = "shortDescription";
     public static final String STEP_DESC = "description";
     public static final String STEP_VIDEO_URL = "videoURL";
-    private static final String STEP_THUMBNAIL_URL = "thumbnailURL";
+    public static final String STEP_THUMBNAIL_URL = "thumbnailURL";
 
-    private static final String SERVINGS = "servings";
-    private static final String IMAGE = "image";
-
+    public static final String SERVINGS = "servings";
+    public static final String IMAGE = "image";
 
     //build recipes
     public static List<Recipe> getRecipeList(String jsonString) {
@@ -108,7 +107,6 @@ public class JsonData {
     }
 
     public static String getJsonString(Context context) {
-        File file = new File(context.getFilesDir() + "/" + JSON_FILE);
         InputStream is = null;
         try {
             is = context.openFileInput(JSON_FILE);

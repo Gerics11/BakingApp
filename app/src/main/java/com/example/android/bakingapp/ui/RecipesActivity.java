@@ -11,7 +11,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.GridView;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.widget.Toast;
 
 import com.example.android.bakingapp.R;
@@ -34,7 +35,7 @@ public class RecipesActivity extends AppCompatActivity implements RecipeAdapter.
 
     private static final String DATA_SOURCE = "https://d17h27t6h515a5.cloudfront.net/topher/2017/May/59121517_baking/baking.json";
 
-    private GridView layout;
+    private RecyclerView layout;
     private RecipeAdapter adapter;
     private List<Recipe> recipes;
 
@@ -45,22 +46,26 @@ public class RecipesActivity extends AppCompatActivity implements RecipeAdapter.
 
         layout = findViewById(R.id.grid_recipes);
 
+        RecyclerView.LayoutManager layoutManager;
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            layoutManager = new GridLayoutManager(this, 2);
+        } else {
+            layoutManager = new GridLayoutManager(this, 3);
+        }
+
+        layout.setLayoutManager(layoutManager);
+
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        if(cm.getActiveNetworkInfo() != null) {
+        if (cm.getActiveNetworkInfo() != null) {
             new DataSync(this).execute(DATA_SOURCE);
-        } else if (getFileStreamPath(JsonData.JSON_FILE).exists()){
+        } else if (getFileStreamPath(JsonData.JSON_FILE).exists()) {
             Toast.makeText(this, R.string.loading_from_cache, Toast.LENGTH_LONG).show();
             recipes = JsonData.getRecipeList(JsonData.getJsonString(this));
             adapter = new RecipeAdapter(this, recipes);
             layout.setAdapter(adapter);
         } else {
             Toast.makeText(this, R.string.no_data, Toast.LENGTH_LONG).show();
-        }
-        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-            layout.setNumColumns(2);
-        } else {
-            layout.setNumColumns(3);
         }
     }
 
@@ -105,7 +110,6 @@ public class RecipesActivity extends AppCompatActivity implements RecipeAdapter.
         sendBroadcast(intent);
     }
 
-
     private class DataSync extends AsyncTask<String, String, String> {
 
         private WeakReference<Context> contextRef;
@@ -125,7 +129,6 @@ public class RecipesActivity extends AppCompatActivity implements RecipeAdapter.
                 connection.connect();
 
                 InputStream stream = connection.getInputStream();
-
                 reader = new BufferedReader(new InputStreamReader(stream));
 
                 StringBuilder builder = new StringBuilder();
@@ -136,7 +139,6 @@ public class RecipesActivity extends AppCompatActivity implements RecipeAdapter.
                             .append("\n");
                 }
                 return builder.toString();
-
 
             } catch (IOException e) {
                 e.printStackTrace();

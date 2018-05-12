@@ -27,6 +27,12 @@ public class RecipeDetailsActivityTest {
 
 
     @Test
+    public void portrait_displayedFragments() {
+        activityTestRule.getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        onView(withId(R.id.step_selector_container)).check(matches(isDisplayed()));
+    }
+
+    @Test
     public void landscape_displayedFragments() {
         activityTestRule.getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         onView(withId(R.id.step_selector_container)).check(matches(isDisplayed()));

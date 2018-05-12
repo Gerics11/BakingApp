@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@color/themePrimaryLighter"
+    android:orientation="vertical"
     tools:context=".ui.fragments.StepInstruction">
 
     <com.google.android.exoplayer2.ui.SimpleExoPlayerView
         android:id="@+id/video_player"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:resize_mode="fixed_width"/>
+        app:resize_mode="fixed_width" />
 
     <RelativeLayout
         android:id="@+id/instruction_layout"
@@ -21,26 +21,31 @@
         android:layout_weight="1"
         android:background="@color/themePrimary">
 
+        <ImageView
+            android:id="@+id/step_thumbnail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
         <TextView
             android:id="@+id/tv_instruction"
-            android:textSize="18sp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:textSize="18sp" />
 
         <ImageView
             android:id="@+id/button_previous"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:src="@drawable/ic_arrow_left"
+            android:layout_alignParentLeft="true"
             android:layout_below="@id/tv_instruction"
-            android:layout_alignParentLeft="true"/>
+            android:src="@drawable/ic_arrow_left" />
 
         <ImageView
             android:id="@+id/button_next"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:src="@drawable/ic_arrow_right"
+            android:layout_alignParentRight="true"
             android:layout_below="@id/tv_instruction"
-            android:layout_alignParentRight="true"/>
+            android:src="@drawable/ic_arrow_right" />
     </RelativeLayout>
 </LinearLayout>

@@ -24,7 +24,7 @@ public class RecipeDetailsActivity extends AppCompatActivity implements StepSele
     private static final String KEY_STEP_POSITION = "position";
 
     private Recipe recipe;
-    private int stepPosition;
+    private int stepPosition = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,10 +37,10 @@ public class RecipeDetailsActivity extends AppCompatActivity implements StepSele
             stepPosition = savedInstanceState.getInt(KEY_STEP_POSITION);
         } else if (getIntent().getExtras() != null) {
             recipe = getIntent().getExtras().getParcelable("recipe");
-            stepPosition = 0;
+            stepPosition = -1;
         } else {
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-            stepPosition = preferences.getInt("position", 1);
+            stepPosition = preferences.getInt("position", -1);
             recipe = JsonData.getRecipeList(JsonData.getJsonString(this)).get(stepPosition);
         }
 
@@ -50,22 +50,26 @@ public class RecipeDetailsActivity extends AppCompatActivity implements StepSele
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
 
-
         if (savedInstanceState == null) {     //first open via intent
-            //create phone or tablet layout-- if phone add stepselector-- tablet add video and selector
             switch (orientation) {
                 case Configuration.ORIENTATION_LANDSCAPE:
-                    if (isTablet) {
+                    if (isTablet || stepPosition == -1) {
                         fragmentTransaction.add(R.id.step_selector_container, StepSelector.newInstance(recipe));
                     }
-                    fragmentTransaction.add(R.id.video_container, StepInstruction.newInstance(recipe.getSteps().get(stepPosition)));
+                    if (stepPosition != -1) {
+                        fragmentTransaction.addToBackStack(null);
+                        fragmentTransaction.replace(R.id.step_selector_container, StepInstruction.newInstance(recipe.getSteps().get(stepPosition)));
+                    }
                     break;
 
                 case Configuration.ORIENTATION_PORTRAIT:
                     fragmentTransaction.add(R.id.step_selector_container, StepSelector.newInstance(recipe));
                     break;
             }
-
+            if (isTablet) {
+                stepPosition = 0;
+                fragmentTransaction.add(R.id.video_container, StepInstruction.newInstance(recipe.getSteps().get(stepPosition)));
+            }
 
         } else {                            //after lifecycle event
             //check for existing fragments
@@ -75,18 +79,20 @@ public class RecipeDetailsActivity extends AppCompatActivity implements StepSele
 
             if (stepFragment == null && (isTablet || orientation == Configuration.ORIENTATION_PORTRAIT))
                 fragmentTransaction.add(R.id.step_selector_container, StepSelector.newInstance(recipe));
-            if (videoFragment == null && orientation == Configuration.ORIENTATION_LANDSCAPE)
+            if (videoFragment == null && orientation == Configuration.ORIENTATION_LANDSCAPE && stepPosition != -1)
                 fragmentTransaction.add(R.id.video_container, StepInstruction.newInstance(recipe.getSteps().get(stepPosition)));
+            savedInstanceState.clear();
         }
 
-        if (!isTablet && orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            android.support.v7.app.ActionBar actionBar = getSupportActionBar();
-            actionBar.hide();
-            if (recipe.getSteps().get(stepPosition).get(JsonData.STEP_VIDEO_URL).isEmpty()){
-                Toast.makeText(this, R.string.no_video_available, Toast.LENGTH_LONG).show();
+        if (!isTablet && orientation == Configuration.ORIENTATION_LANDSCAPE) { //phone landscape
+            if (stepPosition != -1) {
+                android.support.v7.app.ActionBar actionBar = getSupportActionBar();
+                actionBar.hide();
+                if (recipe.getSteps().get(stepPosition).get(JsonData.STEP_VIDEO_URL).isEmpty()) {
+                    Toast.makeText(this, R.string.no_video_available, Toast.LENGTH_LONG).show();
+                }
             }
         }
-
         fragmentTransaction.commit();
     }
 
@@ -149,6 +155,7 @@ public class RecipeDetailsActivity extends AppCompatActivity implements StepSele
 
     @Override
     public void onBackPressed() {
+        stepPosition = -1;
         if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
             getSupportFragmentManager().popBackStack();
         } else {

@@ -22,7 +22,7 @@ public class RecipesActivityTest {
             new ActivityTestRule<>(RecipesActivity.class);
 
     @Test
-    public void gridView_isDisplayed() {
+    public void recyclerView_isDisplayed() {
         onView(withId(R.id.grid_recipes)).check(matches(isDisplayed()));
     }
 }

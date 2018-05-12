@@ -8,7 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
-import android.util.Log;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +17,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.data.JsonData;
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -50,6 +51,7 @@ public class StepInstruction extends Fragment implements ExoPlayer.EventListener
     private Map<String, String> step;
     private SimpleExoPlayer exoPlayer;
     private SimpleExoPlayerView videoView;
+    private ImageView stepThumbNail;
 
     private boolean shouldAutoPlay = true;
 
@@ -82,6 +84,8 @@ public class StepInstruction extends Fragment implements ExoPlayer.EventListener
 
         TextView instructionTextView = view.findViewById(R.id.tv_instruction);
         instructionTextView.setText(instruction);
+        stepThumbNail = view.findViewById(R.id.step_thumbnail);
+        Glide.with(getContext()).load(step.get(JsonData.STEP_THUMBNAIL_URL)).into(stepThumbNail);
         //set button listeners
         ImageView leftButton = view.findViewById(R.id.button_previous);
         leftButton.setOnClickListener(new View.OnClickListener() {
@@ -112,25 +116,29 @@ public class StepInstruction extends Fragment implements ExoPlayer.EventListener
         videoView.setPlayer(exoPlayer);
 
         if (savedInstanceState != null) {
-            Log.d("STEPINSTRUCTION", "using savedinstancestate" + String.valueOf(savedInstanceState.getLong(CODE_PLAYBACK_POSITION)+ String.valueOf(savedInstanceState.getInt(CODE_PLAYBACK_STATE) == ExoPlayer.STATE_READY)));
             exoPlayer.seekTo(savedInstanceState.getLong(CODE_PLAYBACK_POSITION));
             exoPlayer.setPlayWhenReady(savedInstanceState.getBoolean(CODE_PLAYBACK_STATE));
         } else {
             exoPlayer.setPlayWhenReady(true);
         }
-
-
         checkForConnection();
+        setActionBar();
 
         exoPlayer.addListener(this);
 
-        if(!getResources().getBoolean(R.bool.isTablet) &&
-                getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE){
+        if (!getResources().getBoolean(R.bool.isTablet) &&
+                getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             RelativeLayout instructionLayout = view.findViewById(R.id.instruction_layout);
             instructionLayout.setVisibility(View.GONE);
         }
-
         return view;
+    }
+
+    private void setActionBar() {
+        if (getContext().getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            android.support.v7.app.ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+            actionBar.hide();
+        }
     }
 
     //prepare player with media
@@ -149,7 +157,7 @@ public class StepInstruction extends Fragment implements ExoPlayer.EventListener
         DefaultBandwidthMeter bandwidthMeterA = new DefaultBandwidthMeter();
         DefaultDataSourceFactory dataSourceFactory = new DefaultDataSourceFactory(getContext(),
                 Util.getUserAgent(getContext(),
-                "bakingApp"),
+                        "bakingApp"),
                 bandwidthMeterA);
 
         return new ExtractorMediaSource(uri,
@@ -183,8 +191,8 @@ public class StepInstruction extends Fragment implements ExoPlayer.EventListener
     }
 
     @Override
-    public void onDestroy() { //todo remove unneeded lines
-        super.onDestroy();
+    public void onStop() {
+        super.onStop();
         exoPlayer.removeListener(this);
         exoPlayer.release();
     }
@@ -195,8 +203,6 @@ public class StepInstruction extends Fragment implements ExoPlayer.EventListener
         outState.putLong(CODE_PLAYBACK_POSITION, exoPlayer.getCurrentPosition());
         outState.putBoolean(CODE_PLAYBACK_STATE, shouldAutoPlay);
     }
-
-
 
     @Override
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
@@ -226,10 +232,11 @@ public class StepInstruction extends Fragment implements ExoPlayer.EventListener
 
     public interface StepInstructionClickListener {
         void onVideoLeftClick();
+
         void onVideoRightClick();
     }
 
-    private void checkForConnection(){
+    private void checkForConnection() {
         ConnectivityManager cm = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo[] info = cm.getAllNetworkInfo();
         boolean isConnected = false;

@@ -3,17 +3,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.RecipeDetailsActivity"
-    android:background="@color/themePrimaryLighter">
+    android:background="@color/themePrimaryLighter"
+    tools:context=".ui.RecipeDetailsActivity">
 
     <FrameLayout
         android:id="@+id/step_selector_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
 
     <FrameLayout
         android:id="@+id/video_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
 
 </RelativeLayout>
